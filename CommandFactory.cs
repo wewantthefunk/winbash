@@ -20,7 +20,7 @@ namespace bash.dotnet
             } else if (input == "pwd") {
                 return new PWDDBash(configOptions, _view);
             } else if (input == "cd") {
-                return new CDBash(configOptions, _view);
+                return new CDBash(configOptions, _view, _inputDevice);
             } else if (input == "cat") {
                 return new CATBash(configOptions, _view);
             } else if (input.StartsWith("./")) {
@@ -58,7 +58,7 @@ namespace bash.dotnet
         private string FindCommandInPath(string command, ConfigOptions configOptions) {
             string result = string.Empty;
 
-            CDBash cd = new(configOptions, _nullView);
+            CDBash cd = new(configOptions, _nullView, _inputDevice);
             string currentDirectory = Environment.CurrentDirectory;
             cd.Go(new string[] { configOptions.getStartingDir() });
             LSBash c = new(configOptions, _nullView);

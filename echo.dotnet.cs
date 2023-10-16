@@ -17,5 +17,7 @@ namespace bash.dotnet
 
             return _configOptions;
         }
+
+        public void SetProperty(string key, string value) { }
     }
 }

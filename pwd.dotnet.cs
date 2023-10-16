@@ -17,5 +17,7 @@ namespace bash.dotnet
             _view.DisplayInfo(Directory.GetCurrentDirectory() + Environment.NewLine);
             return _configOptions;
         }
+
+        public void SetProperty(string key, string value) { }
     }
 }

@@ -49,5 +49,7 @@ namespace bash.dotnet
 
             return configOptions;
         }
+
+        public void SetCurrentDirectory(string currentDirectory) { }
     }
 }

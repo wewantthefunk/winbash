@@ -4,5 +4,7 @@ namespace bash.dotnet
     {
         void AcceptInput(IView nullView, CommandFactory factory);
         ConfigOptions ReadConfig(ConfigOptions configOptions);
+
+        void SetCurrentDirectory(string currentDirectory);
     }
 }

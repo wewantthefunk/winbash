@@ -14,10 +14,32 @@ namespace bash.dotnet
 
         private IView _view;
 
+        private string _directory;
+
         public LSBash(ConfigOptions configOptions, IView view) {
             _configOptions = configOptions;
             _entries = new();
             _view = view;
+            String currentDirectory = Environment.CurrentDirectory;
+            if (!currentDirectory.EndsWith("\\"))
+            {
+                currentDirectory += "\\";
+            }
+
+            _directory = currentDirectory;
+        }
+
+        public string getCurrentDirectory()
+        {
+            return _directory;
+        }
+
+        public void SetProperty(string key, string value) {
+            key = key.ToLower().Trim();
+            if (key == "directory") {
+                value = value.Replace("/", "\\");
+                _directory = value;
+            }
         }
 
         public string[] getNames() {
@@ -65,6 +87,8 @@ namespace bash.dotnet
             bool showHidden = false;
             bool longForm = false;
 
+            _entries.Clear();
+
             foreach (string arg in args) {
                 if (arg.StartsWith("-")) {
                     for(int x = 1; x < arg.Length; x++) {
@@ -82,20 +106,17 @@ namespace bash.dotnet
                 max_columns = 1;
             }
             
-            String currentDirectory = Environment.CurrentDirectory;
-            if (!currentDirectory.EndsWith("\\")) {
-                currentDirectory += "\\";
-            }
-            string[] files = Directory.GetFiles(currentDirectory);
+            
+            string[] files = Directory.GetFiles(_directory);
             foreach (string file in files) {
-                string name = file.Replace(currentDirectory, string.Empty);
+                string name = file.Replace(_directory, string.Empty);
                 if ((name.StartsWith(".") && showHidden) || !name.StartsWith(".")) {
                     _entries.Add(name, new LSEntry(name, 0, EntryType.FILE));
                 }
             }
-            string[] dirs = Directory.GetDirectories(currentDirectory);
+            string[] dirs = Directory.GetDirectories(_directory);
             foreach (string dir in dirs) {
-                string name = dir.Replace(currentDirectory, string.Empty);
+                string name = dir.Replace(_directory, string.Empty);
                 if ((name.StartsWith(".") && showHidden) || !name.StartsWith(".")) {
                     _entries.Add(name, new LSEntry(name, 0, EntryType.DIR));
                 }

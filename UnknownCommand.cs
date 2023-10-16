@@ -13,5 +13,7 @@ namespace bash.dotnet
             _view.DisplayError("Invalid command\n");
             return _configOptions; 
         }
+
+        public void SetProperty(string key, string value) { }
     }
 }

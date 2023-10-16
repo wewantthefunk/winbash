@@ -35,5 +35,7 @@ namespace bash.dotnet
             _configOptions = command.Go(Array.Empty<string>());
             return _configOptions;
         }
+
+        public void SetProperty(string key, string value) { }
     }
 }

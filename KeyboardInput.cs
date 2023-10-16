@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace bash.dotnet
@@ -7,8 +8,15 @@ namespace bash.dotnet
     {
         private List<Alias> _aliases;
 
+        private LSBash? _tabLSBash;
+
         public KeyboardInput() {
             _aliases = new();
+        }
+
+        public void SetCurrentDirectory(string currentDirectory) {
+            if (_tabLSBash == null) return;
+            _tabLSBash.SetProperty("directory", currentDirectory);
         }
 
         public void AcceptInput(IView nullView, CommandFactory factory) {
@@ -19,54 +27,48 @@ namespace bash.dotnet
             ConfigOptions configOptions = new(Directory.GetCurrentDirectory().Replace("\\", "/")[2..]);
             configOptions = ReadConfig(configOptions);
 
-            CDBash bash = new(configOptions, nullView);
+            _tabLSBash = new(configOptions, nullView);
+
+            CDBash bash = new(configOptions, nullView, this);
             bash.Go(new string[] { configOptions.getStartingDir() });
-            while (true)
-            {
+
+            int cursorPosition = 0;
+            int promptLength = 0;
+
+            while (true) {
                 commandBuilder.Clear();
                 string prompt = configOptions.getPrompt();
                 
                 Console.Write(prompt);
+                string[] p = prompt.Split(Environment.NewLine);
+                promptLength = p[^1].Length;
+                cursorPosition = promptLength;
                 while (true) {
                     var keyInfo = Console.ReadKey(intercept: true);
 
-                    switch (keyInfo.Key)
-                    {
+                    switch (keyInfo.Key) {
                         case ConsoleKey.Tab:
-                            LSBash lSBash = new(configOptions, nullView);
-                            lSBash.Go(new string[2] { "-q", "-a" });
-                            string[] entries = lSBash.getNames();
-
-                            if (commandBuilder.Length > 0 && commandBuilder.ToString().Contains("/"))
-                            {
-                                string c = commandBuilder.ToString();
-
-                            }
-
                             string[] one = commandBuilder.ToString().Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                            if (one.Length < 2) {
-                                continue;
-                            }
-                            string[] tokens = one[one.Length - 1].Split("/", StringSplitOptions.RemoveEmptyEntries);
-                            if (tokens.Length > 0) {
-                                for (int x = 0; x < entries.Length; x++) {
-                                    if (entries[x].StartsWith(tokens[tokens.Length - 1])) {
-                                        for (int y = 0; y < tokens[tokens.Length - 1].Length; y++) {
-                                            commandBuilder = Backspace(commandBuilder);
-                                        }
-                                        commandBuilder.Append(entries[x]);
-                                        Console.Write(entries[x]);
-                                        if (lSBash.GetEntryType(entries[x]) == EntryType.DIR)
-                                            Console.Write("/");
-                                        break;
-                                    }
+                            var suggestions = GetAutocompleteSuggestions(one[one.Length - 1]);
+                            if (suggestions.Count > 0) {
+                                for (int y = 0; y < one[one.Length - 1].Length; y++) {
+                                    commandBuilder = Backspace(commandBuilder);
                                 }
+                                var itemName = suggestions[0].Replace("C:", "");  // Extract the file/directory name
+                                itemName = itemName.Replace("\\", "/");
+                                Console.Write(itemName);
+                                commandBuilder.Append(itemName);
+                                cursorPosition = promptLength + commandBuilder.Length;
                             }
                             break;
                         case ConsoleKey.Escape:
+                            Console.CursorLeft = cursorPosition;
                             commandBuilder = ClearCommand(commandBuilder);
+                            cursorPosition = promptLength;
+                            
                             break;
                         case ConsoleKey.Backspace:
+                            cursorPosition--;
                             commandBuilder = Backspace(commandBuilder);
                             break;
                         case ConsoleKey.UpArrow:
@@ -81,19 +83,38 @@ namespace bash.dotnet
                         case ConsoleKey.DownArrow:
                             lastCommandIndex++;
                             if (lastCommandIndex >= commandList.Count) lastCommandIndex = commandList.Count - 1;
-                            if (commandList.Count > 0 && commandList.Count > lastCommandIndex)
-                            {
+                            if (commandList.Count > 0 && commandList.Count > lastCommandIndex) {
                                 commandBuilder = ClearCommand(commandBuilder);
                                 commandBuilder.Append(commandList[lastCommandIndex]);
                                 Console.Write(commandBuilder.ToString());
                             }
                             break;
+                        case ConsoleKey.LeftArrow:
+                            if (cursorPosition > promptLength) {
+                                cursorPosition--;  // Move cursor position one step back.
+                                MoveCursorLeft();
+                            }
+                            break;
                         default:
-                            if (!IsValidCharacter(keyInfo.Key)){
+                            if (!IsValidCharacter(keyInfo.Key)) {
                                 break;
                             }
-                            commandBuilder.Append(keyInfo.KeyChar);
-                            Console.Write(keyInfo.KeyChar);
+                            string therest = "";
+                            if (cursorPosition < promptLength + commandBuilder.Length) {
+                                therest = commandBuilder.ToString().Substring(cursorPosition - promptLength);
+                                commandBuilder.Insert(cursorPosition - promptLength, keyInfo.KeyChar);
+                                cursorPosition = promptLength + commandBuilder.Length - therest.Length;
+                            } else {
+                                commandBuilder.Append(keyInfo.KeyChar);
+                                cursorPosition = promptLength + commandBuilder.Length;                                
+                            }
+
+                            Console.Write(keyInfo.KeyChar + therest);
+
+                            for (int x = 0; x < therest.Length; x++) {
+                                MoveCursorLeft();
+                            }
+
                             break;
                     }
 
@@ -115,8 +136,49 @@ namespace bash.dotnet
             }
         }
 
-        private bool IsValidCharacter(ConsoleKey key)
+        private List<string> GetAutocompleteSuggestions(string input)
         {
+            // Split the input into a path and the current incomplete directory/file name
+            string basePath, currentIncompleteName;
+            int lastSlashIndex = input.LastIndexOf('/');
+            if (lastSlashIndex >= 0) {
+                basePath = input.Substring(0, lastSlashIndex);
+                currentIncompleteName = input.Substring(lastSlashIndex + 1);
+            }
+            else {
+                basePath = "";  // current directory
+                currentIncompleteName = input;
+            }
+
+            // If no base path is provided, use the current directory
+            if (string.IsNullOrEmpty(basePath)) {
+                basePath = Directory.GetCurrentDirectory();
+
+                if (input.StartsWith("/")) {
+                    basePath = "C:\\";
+                }
+            }
+
+            var suggestions = new List<string>();
+            try {
+                // Get all directories and files in the base path
+                var entries = Directory.EnumerateFileSystemEntries(basePath);
+
+                // Filter entries to those that start with the current incomplete name
+                suggestions = entries.Where(path =>
+                {
+                    var itemName = Path.GetFileName(path);
+                    return itemName.StartsWith(currentIncompleteName, StringComparison.OrdinalIgnoreCase);
+                }).ToList();
+            }
+            catch {
+                // Handle exceptions (e.g., directory not found, no permission, etc.)
+            }
+
+            return suggestions;
+        }
+
+        private bool IsValidCharacter(ConsoleKey key) {
             // Check for letter (A to Z, both cases)
             if (key >= ConsoleKey.A && key <= ConsoleKey.Z)
                 return true;
@@ -133,8 +195,7 @@ namespace bash.dotnet
                 return true;
 
             // Check for special characters (this list can be expanded as needed)
-            var specialChars = new[]
-            {
+            var specialChars = new[] {
                 ConsoleKey.Oem1,       // e.g., ';' or ':' on US keyboards
                 ConsoleKey.OemPlus,    // e.g., '=' or '+' on US keyboards
                 ConsoleKey.OemComma,   // e.g., ',' or '<' on US keyboards
@@ -150,6 +211,28 @@ namespace bash.dotnet
             };
 
             return Array.Exists(specialChars, ch => ch == key);
+        }
+
+        private void MoveCursorLeft()
+        {
+            if (Console.CursorLeft == 0) {
+                Console.CursorTop--;
+                Console.CursorLeft = Console.BufferWidth - 1;
+            }
+            else {
+                Console.CursorLeft--;
+            }
+        }
+
+        private void MoveCursorRight()
+        {
+            if (Console.CursorLeft == Console.BufferWidth - 1) {
+                Console.CursorTop++;
+                Console.CursorLeft = 0;
+            }
+            else {
+                Console.CursorLeft++;
+            }
         }
 
         public ConfigOptions ReadConfig(ConfigOptions configOptions) {
@@ -182,8 +265,7 @@ namespace bash.dotnet
             return configOptions;
         }
 
-        private int AliasExist(string name)
-        {
+        private int AliasExist(string name) {
             for (int x = 0; x < _aliases.Count; x++) {
                 if (_aliases[x].getName() == name) {
                     return x;
@@ -203,10 +285,8 @@ namespace bash.dotnet
             return commandBuilder;
         }
 
-        private StringBuilder ClearCommand(StringBuilder commandBuilder)
-        {
-            while (commandBuilder.Length > 0)
-            {
+        private StringBuilder ClearCommand(StringBuilder commandBuilder) {
+            while (commandBuilder.Length > 0) {
                 commandBuilder = Backspace(commandBuilder);
             }
 

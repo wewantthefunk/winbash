@@ -6,12 +6,15 @@ namespace bash.dotnet
 {
     class CDBash : ICommand
     {
-        private ConfigOptions _configOptions;
+        private readonly ConfigOptions _configOptions;
 
         private IView _view;
-        public CDBash(ConfigOptions configOptions, IView view) {
+
+        private IInput _inputDevice;
+        public CDBash(ConfigOptions configOptions, IView view, IInput inputDevice) {
             _configOptions = configOptions;
             _view = view;
+            _inputDevice = inputDevice;
         }
         
         public ConfigOptions Go(string[] args)
@@ -30,7 +33,10 @@ namespace bash.dotnet
                 _view.DisplayError("Invalid directory\n");
             }
             _configOptions.resetPrompt();
+            _inputDevice.SetCurrentDirectory(Directory.GetCurrentDirectory() + "\\");
             return _configOptions;
         }
+
+        public void SetProperty(string key, string value) { }
     }
 }

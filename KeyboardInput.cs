@@ -5,8 +5,15 @@ namespace bash.dotnet
 {
     class KeyboardInput : IInput
     {
+        private List<Alias> _aliases;
+
+        public KeyboardInput() {
+            _aliases = new();
+        }
+
         public void AcceptInput(IView nullView, CommandFactory factory) {
             List<string> commandList = new();
+            
             int lastCommandIndex = 0;
             StringBuilder commandBuilder = new();
             ConfigOptions configOptions = new(Directory.GetCurrentDirectory().Replace("\\", "/")[2..]);
@@ -161,10 +168,29 @@ namespace bash.dotnet
                     configOptions.setStartingDir(tokens[1]);
                 } else if (tokens[0] == "prompt") {
                     configOptions.setPromptTmeplate(tokens[1]);
+                } else if (tokens[0] == "alias") {
+                    string[] ai = tokens[1].Split("~~~");
+                    int x = AliasExist(ai[0]);
+                    if (x < 0) {
+                        _aliases.Add(new Alias(ai[0], ai[1]));
+                    } else {
+                        _aliases[x].setCommand(ai[1]);
+                    }
                 }
             }
 
             return configOptions;
+        }
+
+        private int AliasExist(string name)
+        {
+            for (int x = 0; x < _aliases.Count; x++) {
+                if (_aliases[x].getName() == name) {
+                    return x;
+                }
+            }
+
+            return -1;
         }
 
         private StringBuilder Backspace(StringBuilder commandBuilder) {
@@ -194,6 +220,12 @@ namespace bash.dotnet
 
             for (int x = 1; x < tokens.Length; x++) {
                 args[x - 1] = tokens[x];
+            }
+
+            foreach(Alias a in _aliases) {
+                if (a.getName() == tokens[0]) {
+                    return ExecuteCommand(a.getCommand(), factory, configOptions);
+                }
             }
 
             ICommand command = factory.Create(tokens[0], configOptions);

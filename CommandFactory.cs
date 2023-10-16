@@ -31,18 +31,22 @@ namespace bash.dotnet
                 return new ECHOBash(_view, configOptions);
             } else if (input == "config") {
                 return new CONFIGBash(configOptions, _view, this, _inputDevice);
+            } else if (input == "mv") {
+                return new MVBash(_view, configOptions);
+            } else if (input == "cp") {
+                return new CPBash(_view, configOptions);
+            } else if (input == "rm") {
+                return new RMBash(_view, configOptions);
             }
 
             if (input == "./") {
                 input = input[2..];
             }
 
-            string[] y = input.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-
             foreach (string p in configOptions.getPath()) {
                 ConfigOptions co = new(p);
                 co.setStartingDir(p);
-                string exe = FindCommandInPath(y[0], co);
+                string exe = FindCommandInPath(input, co);
                 if (!string.IsNullOrEmpty(exe)) {
                     return new EXECBash(configOptions, _view, exe);
                 }

@@ -8,6 +8,7 @@ namespace bash.dotnet
         private string _username;
         private string _prompt;
         private string _environmentPath;
+        private string _title;
 
         public const string DEFAULT_PROMPT = "[dir] $ ";
 
@@ -18,6 +19,7 @@ namespace bash.dotnet
             _environmentPath = string.Empty;
             _promptTemplate = DEFAULT_PROMPT;
             _username = Environment.UserName;
+            _title = "WinBash Command Line";
             resetPrompt();
             resetEnvironmentPath();
         }
@@ -40,6 +42,14 @@ namespace bash.dotnet
 
         public void setPromptTmeplate(string value) {
             _promptTemplate = value;
+        }
+
+        public string getTitle() {
+            return _title;
+        }
+
+        public void setTitle(string value) {
+            _title = value;
         }
 
         public string getUserName() {

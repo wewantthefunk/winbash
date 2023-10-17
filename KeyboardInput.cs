@@ -95,6 +95,28 @@ namespace bash.dotnet
                                 MoveCursorLeft();
                             }
                             break;
+                        case ConsoleKey.RightArrow:
+                            if (cursorPosition < promptLength + commandBuilder.Length) {
+                                cursorPosition++;  // Move cursor position one step forward.
+                                MoveCursorRight();
+                            }
+                            break;
+                        case ConsoleKey.Home:
+                            while (cursorPosition > promptLength) {
+                                if (cursorPosition > promptLength) {
+                                    cursorPosition--;  // Move cursor position one step back.
+                                    MoveCursorLeft();
+                                }
+                            }
+                            break;
+                        case ConsoleKey.End:
+                            while (cursorPosition < promptLength + commandBuilder.Length) {
+                                if (cursorPosition < promptLength + commandBuilder.Length) {
+                                    cursorPosition++;  // Move cursor position one step back.
+                                    MoveCursorRight();
+                                }
+                            }
+                            break;
                         default:
                             if (!IsValidCharacter(keyInfo.Key)) {
                                 break;
@@ -116,6 +138,7 @@ namespace bash.dotnet
                             }
 
                             break;
+
                     }
 
                     if (keyInfo.Key == ConsoleKey.Enter) {                        

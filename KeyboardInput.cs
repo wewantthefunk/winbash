@@ -282,6 +282,8 @@ namespace bash.dotnet
                     } else {
                         _aliases[x].setCommand(ai[1]);
                     }
+                } else if (tokens[0] == "title") {
+                    configOptions.setTitle(tokens[1]);
                 }
             }
 

@@ -29,6 +29,8 @@ namespace bash.dotnet
 
             _tabLSBash = new(configOptions, nullView);
 
+            Console.Title = configOptions.getTitle();
+
             CDBash bash = new(configOptions, nullView, this);
             bash.Go(new string[] { configOptions.getStartingDir() });
 

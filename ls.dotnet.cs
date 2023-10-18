@@ -3,10 +3,8 @@ using System.Globalization;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
-namespace bash.dotnet
-{
-    class LSBash : ICommand
-    {
+namespace bash.dotnet {
+    class LSBash : ICommand {
         private ConfigOptions _configOptions;
         private const string ENTRY_SPACER = "  ";
 
@@ -21,16 +19,14 @@ namespace bash.dotnet
             _entries = new();
             _view = view;
             String currentDirectory = Environment.CurrentDirectory;
-            if (!currentDirectory.EndsWith("\\"))
-            {
+            if (!currentDirectory.EndsWith("\\")) {
                 currentDirectory += "\\";
             }
 
             _directory = currentDirectory;
         }
 
-        public string getCurrentDirectory()
-        {
+        public string getCurrentDirectory() {
             return _directory;
         }
 
@@ -57,24 +53,19 @@ namespace bash.dotnet
             return result.ToArray();
         }
 
-        public string[] getNames(string name)
-        {
+        public string[] getNames(string name) {
             return new string[0];
         }
 
-        public EntryType GetEntryType(string name)
-        {
-            for (int x = 0; x < _entries.Count; x++)
-            {
+        public EntryType GetEntryType(string name) {
+            for (int x = 0; x < _entries.Count; x++) {
                 object? o = _entries.GetByIndex(x);
-                if (o == null)
-                {
+                if (o == null) {
                     continue;
                 }
 
                 LSEntry entry = (LSEntry)o;
-                if (entry.getName() == name)
-                {
+                if (entry.getName() == name) {
                     return entry.getEntryType();
                 }
             }
@@ -82,8 +73,7 @@ namespace bash.dotnet
             return EntryType.UNKNOWN;
         }
         
-        public ConfigOptions Go(string[] args)
-        {
+        public ConfigOptions Go(string[] args) {
             bool showHidden = false;
             bool longForm = false;
 
@@ -214,7 +204,7 @@ namespace bash.dotnet
                     _fileSize = "???";
                 }
             } else {
-                _fileSize = "512";
+                _fileSize = "0";
             }
 
             _fileDate = FormatCustomDateTime(fi.LastWriteTime);
@@ -244,13 +234,11 @@ namespace bash.dotnet
             return _fileSize;
         }
 
-        public string getFileDate()
-        {
+        public string getFileDate() {
             return _fileDate;
         }
 
-        public string ToString(int colCountMaxLength, String spacer)
-        {
+        public string ToString(int colCountMaxLength, String spacer) {
             return getName().PadRight(colCountMaxLength) + spacer;
         }
         public string ToFullString(ConfigOptions configOptions, int maxFileSizeLength) {
@@ -312,19 +300,16 @@ namespace bash.dotnet
             return result.ToString();
         }
 
-        private string FormatCustomDateTime(DateTime dt)
-        {
+        private string FormatCustomDateTime(DateTime dt) {
             string month = dt.ToString("MMM", CultureInfo.InvariantCulture);  // First 3 characters of the month name
             string day = dt.ToString("dd");  // Two-digit day
 
             // Check if the year is the current year
-            if (dt.Year == DateTime.Now.Year)
-            {
+            if (dt.Year == DateTime.Now.Year) {
                 string time = dt.ToString("HH:mm");  // 24-hour format time
                 return $"{month} {day} {time}";
             }
-            else
-            {
+            else {
                 return $"{month} {day}  {dt.Year}";
             }
         }

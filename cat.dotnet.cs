@@ -1,19 +1,16 @@
 namespace bash.dotnet
 {
-    class CATBash : ICommand
-    {
+    class CATBash : ICommand {
         private ConfigOptions _configOptions;
 
         private IView _view;
 
-        public CATBash(ConfigOptions configOptions, IView view)
-        {
+        public CATBash(ConfigOptions configOptions, IView view) {
             _configOptions = configOptions;
             _view = view;
         }
         
-        public ConfigOptions Go(string[] args)
-        {
+        public ConfigOptions Go(string[] args) {
             string filename = args[0];
 
             if (File.Exists(filename)) {

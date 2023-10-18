@@ -1,12 +1,12 @@
 namespace bash.dotnet
 {
-    class PWDDBash : ICommand
+    class PWDBash : ICommand
     {
         private ConfigOptions _configOptions;
 
         private IView _view;
 
-        public PWDDBash(ConfigOptions configOptions, IView view)
+        public PWDBash(ConfigOptions configOptions, IView view)
         {
             _configOptions = configOptions;
             _view = view;

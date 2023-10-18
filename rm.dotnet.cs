@@ -6,37 +6,30 @@ using System.Threading.Tasks;
 
 namespace bash.dotnet
 {
-    internal class RMBash : ICommand
-    {
+    internal class RMBash : ICommand {
         private ConfigOptions _configOptions;
         private IView _view;
 
-        public RMBash(IView view, ConfigOptions configOptions)
-        {
+        public RMBash(IView view, ConfigOptions configOptions) {
             _view = view;
             _configOptions = configOptions;
         }
 
-        public ConfigOptions Go(string[] args)
-        {
-            if (args.Length < 1)
-            {
+        public ConfigOptions Go(string[] args) {
+            if (args.Length < 1) {
                 _view.DisplayError("mv command requires a file to delete\n");
                 return _configOptions;
             }
 
-            if (!File.Exists(args[0]))
-            {
+            if (!File.Exists(args[0])) {
                 _view.DisplayError($"Source file '{args[0]}' does not exists.\n");
                 return _configOptions;
             }
 
-            try
-            {
+            try {
                 File.Delete(args[0]);
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 _view.DisplayError(e.Message + Environment.NewLine);
             }
 

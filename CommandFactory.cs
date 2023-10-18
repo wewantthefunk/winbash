@@ -1,7 +1,5 @@
-namespace bash.dotnet
-{
-    class CommandFactory : ICommandFactory
-    {
+namespace bash.dotnet {
+    class CommandFactory : ICommandFactory {
         private IView _view;
 
         private IView _nullView;
@@ -18,7 +16,7 @@ namespace bash.dotnet
             if (input == "ls") {
                 return new LSBash(configOptions, _view);
             } else if (input == "pwd") {
-                return new PWDDBash(configOptions, _view);
+                return new PWDBash(configOptions, _view);
             } else if (input == "cd") {
                 return new CDBash(configOptions, _view, _inputDevice);
             } else if (input == "cat") {
@@ -37,6 +35,10 @@ namespace bash.dotnet
                 return new CPBash(_view, configOptions);
             } else if (input == "rm") {
                 return new RMBash(_view, configOptions);
+            } else if (input == "mkdir") {
+                return new MKDIRBash(configOptions, _view);
+            } else if (input == "rmdir") {
+                return new RMDIRBash(configOptions, _view);
             }
 
             if (input == "./") {

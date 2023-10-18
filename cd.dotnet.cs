@@ -2,10 +2,8 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection.Metadata.Ecma335;
 
-namespace bash.dotnet
-{
-    class CDBash : ICommand
-    {
+namespace bash.dotnet {
+    class CDBash : ICommand {
         private readonly ConfigOptions _configOptions;
 
         private IView _view;
@@ -17,8 +15,7 @@ namespace bash.dotnet
             _inputDevice = inputDevice;
         }
         
-        public ConfigOptions Go(string[] args)
-        {
+        public ConfigOptions Go(string[] args) {
             string path = string.Empty;
 
             for (int x = 0; x < args.Length; x++) {

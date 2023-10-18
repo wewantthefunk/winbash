@@ -1,15 +1,18 @@
+using System.Runtime.InteropServices;
 using System.Text;
+using System;
 
-namespace bash.dotnet
-{
-    class KeyboardInput : IInput
-    {
+namespace bash.dotnet {
+    partial class KeyboardInput : IInput {
         private List<Alias> _aliases;
 
         private LSBash? _tabLSBash;
 
+        private bool _isInsertMode;
+
         public KeyboardInput() {
             _aliases = new();
+            _isInsertMode = true;
         }
 
         public void SetCurrentDirectory(string currentDirectory) {
@@ -27,13 +30,13 @@ namespace bash.dotnet
 
             _tabLSBash = new(configOptions, nullView);
 
-            Console.Title = configOptions.getTitle();
+            Console.Title = configOptions.getTitle() + " [INS]";
 
             CDBash bash = new(configOptions, nullView, this);
             bash.Go(new string[] { configOptions.getStartingDir() });
 
-            int cursorPosition = 0;
-            int promptLength = 0;
+            int cursorPosition;
+            int promptLength;
 
             while (true) {
                 commandBuilder.Clear();
@@ -49,26 +52,31 @@ namespace bash.dotnet
                     switch (keyInfo.Key) {
                         case ConsoleKey.Tab:
                             string[] one = commandBuilder.ToString().Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                            var suggestions = GetAutocompleteSuggestions(one[one.Length - 1]);
+                            var suggestions = GetAutocompleteSuggestions(one[^1]);
                             if (suggestions.Count > 0) {
-                                for (int y = 0; y < one[one.Length - 1].Length; y++) {
+                                for (int y = 0; y < one[^1].Length; y++) {
                                     commandBuilder = Backspace(commandBuilder);
                                 }
-                                var itemName = suggestions[0].Replace("C:", "");  // Extract the file/directory name
+                                var itemName = suggestions[0].Replace("C:", "");
                                 itemName = itemName.Replace("\\", "/");
+                                if (itemName.Contains(" ")) {
+                                    itemName = "\"" + itemName + "\"";
+                                }
                                 Console.Write(itemName);
                                 commandBuilder.Append(itemName);
                                 cursorPosition = promptLength + commandBuilder.Length;
                             }
                             break;
                         case ConsoleKey.Escape:
-                            Console.CursorLeft = cursorPosition;
+                            Console.CursorLeft = promptLength + commandBuilder.Length;
                             commandBuilder = ClearCommand(commandBuilder);
                             cursorPosition = promptLength;                            
                             break;
                         case ConsoleKey.Backspace:
                             cursorPosition--;
                             commandBuilder = Backspace(commandBuilder);
+                            //TODO: write out the rest of the command from this point. Make sure you clear the rest of the line first
+                            //      look at the overwrite code for inspiration
                             break;
                         case ConsoleKey.UpArrow:
                             lastCommandIndex--;
@@ -77,6 +85,7 @@ namespace bash.dotnet
                                 commandBuilder = ClearCommand(commandBuilder);
                                 commandBuilder.Append(commandList[lastCommandIndex]);
                                 Console.Write(commandBuilder.ToString());
+                                cursorPosition = promptLength + commandBuilder.Length;
                             }
                             break;
                         case ConsoleKey.DownArrow:
@@ -86,6 +95,7 @@ namespace bash.dotnet
                                 commandBuilder = ClearCommand(commandBuilder);
                                 commandBuilder.Append(commandList[lastCommandIndex]);
                                 Console.Write(commandBuilder.ToString());
+                                cursorPosition = promptLength + commandBuilder.Length;
                             }
                             break;
                         case ConsoleKey.LeftArrow:
@@ -116,6 +126,27 @@ namespace bash.dotnet
                                 }
                             }
                             break;
+                        case ConsoleKey.Insert:
+                            _isInsertMode = !_isInsertMode;
+                            if (_isInsertMode) {
+                                Console.Title = configOptions.getTitle() + " [INS]";
+                            } else {
+                                Console.Title = configOptions.getTitle();
+                            }
+                            break;
+                        case ConsoleKey.Delete:
+                            string therest1 = "";
+                            if (cursorPosition < promptLength + commandBuilder.Length) {
+                                int i = cursorPosition - promptLength;
+                                if (i < 0) i = 0;
+                                therest1 = commandBuilder.ToString().Substring(i + 1);
+                                commandBuilder.Remove(i, 1);
+                                cursorPosition = promptLength + commandBuilder.Length - therest1.Length;
+                                Console.Write(therest1 + " ");
+                                Console.Write("\b \b");  // Erase last character on the screen
+                                Console.CursorLeft = cursorPosition;
+                            }
+                            break;
                         default:
                             if (!IsValidCharacter(keyInfo.Key)) {
                                 break;
@@ -124,6 +155,7 @@ namespace bash.dotnet
                             if (cursorPosition < promptLength + commandBuilder.Length) {
                                 int i = cursorPosition - promptLength;
                                 if (i < 0) i = 0;
+                                if (!_isInsertMode) i++;
                                 therest = commandBuilder.ToString().Substring(i);
                                 commandBuilder.Insert(i, keyInfo.KeyChar);
                                 cursorPosition = promptLength + commandBuilder.Length - therest.Length;
@@ -160,8 +192,7 @@ namespace bash.dotnet
             }
         }
 
-        private List<string> GetAutocompleteSuggestions(string input)
-        {
+        private List<string> GetAutocompleteSuggestions(string input) {
             // Split the input into a path and the current incomplete directory/file name
             string basePath, currentIncompleteName;
             int lastSlashIndex = input.LastIndexOf('/');
@@ -237,8 +268,7 @@ namespace bash.dotnet
             return Array.Exists(specialChars, ch => ch == key);
         }
 
-        private void MoveCursorLeft()
-        {
+        private void MoveCursorLeft() {
             if (Console.CursorLeft == 0) {
                 Console.CursorTop--;
                 Console.CursorLeft = Console.BufferWidth - 1;
@@ -248,8 +278,7 @@ namespace bash.dotnet
             }
         }
 
-        private void MoveCursorRight()
-        {
+        private void MoveCursorRight() {
             if (Console.CursorLeft == Console.BufferWidth - 1) {
                 Console.CursorTop++;
                 Console.CursorLeft = 0;
@@ -320,7 +349,31 @@ namespace bash.dotnet
         }
 
         private ConfigOptions ExecuteCommand(string cmdText, CommandFactory factory, ConfigOptions configOptions) {
-            string[] tokens = cmdText.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+            string[] tokens_temp = cmdText.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+
+            List<string> tokensList = new();
+
+            string temp = "";
+            bool inQuotes = false;
+            foreach(string token in tokens_temp) {
+                if (token.StartsWith("\"")) {
+                    inQuotes = true;
+                    temp = token[1..];                
+                } else if (token.EndsWith("\"")) {
+                    inQuotes = false;
+                    temp += string.Concat(" ", token.AsSpan(0, token.Length - 1));
+                } else if (inQuotes) {
+                    temp += " " + token;
+                } else {
+                    temp = token;
+                }
+
+                if (!inQuotes) {
+                    tokensList.Add(temp);
+                }
+            }
+
+            string[] tokens = tokensList.ToArray();
 
             string[] args = new string[tokens.Length - 1];
 

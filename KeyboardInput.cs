@@ -1,5 +1,3 @@
-using System.ComponentModel;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace bash.dotnet
@@ -66,8 +64,7 @@ namespace bash.dotnet
                         case ConsoleKey.Escape:
                             Console.CursorLeft = cursorPosition;
                             commandBuilder = ClearCommand(commandBuilder);
-                            cursorPosition = promptLength;
-                            
+                            cursorPosition = promptLength;                            
                             break;
                         case ConsoleKey.Backspace:
                             cursorPosition--;
@@ -114,7 +111,7 @@ namespace bash.dotnet
                         case ConsoleKey.End:
                             while (cursorPosition < promptLength + commandBuilder.Length) {
                                 if (cursorPosition < promptLength + commandBuilder.Length) {
-                                    cursorPosition++;  // Move cursor position one step back.
+                                    cursorPosition++;  // Move cursor position one step forward.
                                     MoveCursorRight();
                                 }
                             }
@@ -125,8 +122,10 @@ namespace bash.dotnet
                             }
                             string therest = "";
                             if (cursorPosition < promptLength + commandBuilder.Length) {
-                                therest = commandBuilder.ToString().Substring(cursorPosition - promptLength);
-                                commandBuilder.Insert(cursorPosition - promptLength, keyInfo.KeyChar);
+                                int i = cursorPosition - promptLength;
+                                if (i < 0) i = 0;
+                                therest = commandBuilder.ToString().Substring(i);
+                                commandBuilder.Insert(i, keyInfo.KeyChar);
                                 cursorPosition = promptLength + commandBuilder.Length - therest.Length;
                             } else {
                                 commandBuilder.Append(keyInfo.KeyChar);

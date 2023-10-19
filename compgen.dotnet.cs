@@ -17,15 +17,25 @@
                 _view.DisplayError("invalid switch\n");
             }
 
-            string[] s = new string[0];
+            List<string> s = new();
 
-            if (args[0] == "-a") {
-                s = _inputDevice.getAliases();                
-            } else if (args[0] == "-b") {
-                s = _factory.getBuiltInCommands();
+            if (args[0] == "-a" || args[0] == "-c") {
+                string[] s1 = _inputDevice.getAliases();                
+                
+                foreach(string s11 in s1) {
+                    s.Add(s11);
+                }
+            } 
+            
+            if (args[0] == "-b" || args[0] == "-c") {
+                    string[] s1 = _factory.getBuiltInCommands();
+
+                foreach (string s11 in s1) {
+                    s.Add(s11);
+                }
             }
 
-            _view.DisplayInfo("Total " + s.Length.ToString() + Environment.NewLine);
+            _view.DisplayInfo("Total " + s.Count.ToString() + Environment.NewLine);
             foreach (string s1 in s) {
                 _view.DisplayInfo(s1 + Environment.NewLine);
             }

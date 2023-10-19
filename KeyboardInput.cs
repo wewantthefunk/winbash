@@ -358,7 +358,10 @@ namespace bash.dotnet {
             foreach(string token in tokens_temp) {
                 if (token.StartsWith("\"")) {
                     inQuotes = true;
-                    temp = token[1..];                
+                    temp = token[1..];    
+                    if (token.EndsWith("\"")) {
+                        inQuotes = false;
+                    }
                 } else if (token.EndsWith("\"")) {
                     inQuotes = false;
                     temp += string.Concat(" ", token.AsSpan(0, token.Length - 1));

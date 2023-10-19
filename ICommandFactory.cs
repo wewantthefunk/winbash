@@ -3,5 +3,6 @@
     internal interface ICommandFactory
     {
         ICommand Create(string input, ConfigOptions configOptions);
+        string[] getBuiltInCommands();
     }
 }

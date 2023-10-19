@@ -75,8 +75,13 @@ namespace bash.dotnet {
                         case ConsoleKey.Backspace:
                             cursorPosition--;
                             commandBuilder = Backspace(commandBuilder);
-                            //TODO: write out the rest of the command from this point. Make sure you clear the rest of the line first
-                            //      look at the overwrite code for inspiration
+                            int rest = commandBuilder.Length - cursorPosition;
+                            for (int x = 0; x < rest + 1; x++) {
+                                Console.Write(' ');
+                            }
+                            for (int x = 0; x < rest; x++) {
+                                Console.Write(commandBuilder.ToString()[cursorPosition + x]);
+                            }
                             break;
                         case ConsoleKey.UpArrow:
                             lastCommandIndex--;
@@ -395,6 +400,16 @@ namespace bash.dotnet {
             configOptions = command.Go(args);
 
             return configOptions;
+        }
+
+        public string[] getAliases() {
+            string[] result = new string[_aliases.Count];
+
+            for (int x = 0; x < result.Length; x++) {
+                result[x] = _aliases[x].getName();
+            }
+
+            return result;
         }
     }
 }

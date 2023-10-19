@@ -4,10 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace bash.dotnet
-{
-    internal class Alias
-    {
+namespace bash.dotnet {
+    internal class Alias {
         private string _name;
         private string _command;
 

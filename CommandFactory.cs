@@ -39,6 +39,8 @@ namespace bash.dotnet {
                 return new MKDIRBash(configOptions, _view);
             } else if (input == "rmdir") {
                 return new RMDIRBash(configOptions, _view);
+            } else if (input == "compgen") {
+                return new COMPGENBash(_view, configOptions, _inputDevice, this);
             }
 
             if (input == "./") {
@@ -55,6 +57,10 @@ namespace bash.dotnet {
             }
 
             return new UnknownCommand(_view, configOptions);
+        }
+
+        public string[] getBuiltInCommands() {
+            return new string[] { "cat", "cd", "clear", "compgen", "config", "cp", "echo", "mkdir", "mv", "pwd", "rm", "rmdir" };
         }
 
         private string FindCommandInPath(string command, ConfigOptions configOptions) {

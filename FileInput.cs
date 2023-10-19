@@ -51,5 +51,7 @@ namespace bash.dotnet
         }
 
         public void SetCurrentDirectory(string currentDirectory) { }
+
+        public string[] getAliases() { return new string[0]; }
     }
 }

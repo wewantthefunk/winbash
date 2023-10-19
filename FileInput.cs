@@ -7,7 +7,7 @@ namespace bash.dotnet
         public FileInput(string filename) {
             _filename = filename;
         }
-        public void AcceptInput(IView nullView, CommandFactory factory) {
+        public void AcceptInput(IView nullView, ICommandFactory factory) {
             ConfigOptions configOptions = new(Directory.GetCurrentDirectory().Replace("\\", "/")[2..]);
             configOptions = ReadConfig(configOptions);
             if (File.Exists(_filename)) {

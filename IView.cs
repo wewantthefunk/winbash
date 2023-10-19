@@ -13,5 +13,7 @@ namespace bash.dotnet
         void DisplayInfo(string msg);
 
         void Clear();
+
+        void SetConfigOptions(ConfigOptions? configOptions);
     }
 }

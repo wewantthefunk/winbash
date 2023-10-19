@@ -10,9 +10,12 @@ namespace bash.dotnet {
 
         private bool _isInsertMode;
 
-        public KeyboardInput() {
+        private IView _view;
+
+        public KeyboardInput(IView view) {
             _aliases = new();
             _isInsertMode = true;
+            _view = view;
         }
 
         public void SetCurrentDirectory(string currentDirectory) {
@@ -20,13 +23,15 @@ namespace bash.dotnet {
             _tabLSBash.SetProperty("directory", currentDirectory);
         }
 
-        public void AcceptInput(IView nullView, CommandFactory factory) {
+        public void AcceptInput(IView nullView, ICommandFactory factory) {
             List<string> commandList = new();
             
             int lastCommandIndex = 0;
             StringBuilder commandBuilder = new();
             ConfigOptions configOptions = new(Directory.GetCurrentDirectory().Replace("\\", "/")[2..]);
             configOptions = ReadConfig(configOptions);
+
+            _view.SetConfigOptions(configOptions);
 
             _tabLSBash = new(configOptions, nullView);
 
@@ -42,7 +47,7 @@ namespace bash.dotnet {
                 commandBuilder.Clear();
                 string prompt = configOptions.getPrompt();
                 
-                Console.Write(prompt);
+                _view.Display(prompt);
                 string[] p = prompt.Split(Environment.NewLine);
                 promptLength = p[^1].Length;
                 cursorPosition = promptLength;
@@ -62,7 +67,7 @@ namespace bash.dotnet {
                                 if (itemName.Contains(" ")) {
                                     itemName = "\"" + itemName + "\"";
                                 }
-                                Console.Write(itemName);
+                                _view.Display(itemName);
                                 commandBuilder.Append(itemName);
                                 cursorPosition = promptLength + commandBuilder.Length;
                             }
@@ -77,10 +82,10 @@ namespace bash.dotnet {
                             commandBuilder = Backspace(commandBuilder);
                             int rest = commandBuilder.Length - cursorPosition;
                             for (int x = 0; x < rest + 1; x++) {
-                                Console.Write(' ');
+                                _view.Display(" ");
                             }
                             for (int x = 0; x < rest; x++) {
-                                Console.Write(commandBuilder.ToString()[cursorPosition + x]);
+                                _view.Display(commandBuilder.ToString()[cursorPosition + x].ToString());
                             }
                             break;
                         case ConsoleKey.UpArrow:
@@ -89,7 +94,7 @@ namespace bash.dotnet {
                             if (commandList.Count > 0 && commandList.Count > lastCommandIndex) {
                                 commandBuilder = ClearCommand(commandBuilder);
                                 commandBuilder.Append(commandList[lastCommandIndex]);
-                                Console.Write(commandBuilder.ToString());
+                                _view.Display(commandBuilder.ToString());
                                 cursorPosition = promptLength + commandBuilder.Length;
                             }
                             break;
@@ -99,7 +104,7 @@ namespace bash.dotnet {
                             if (commandList.Count > 0 && commandList.Count > lastCommandIndex) {
                                 commandBuilder = ClearCommand(commandBuilder);
                                 commandBuilder.Append(commandList[lastCommandIndex]);
-                                Console.Write(commandBuilder.ToString());
+                                _view.Display(commandBuilder.ToString());
                                 cursorPosition = promptLength + commandBuilder.Length;
                             }
                             break;
@@ -147,8 +152,8 @@ namespace bash.dotnet {
                                 therest1 = commandBuilder.ToString().Substring(i + 1);
                                 commandBuilder.Remove(i, 1);
                                 cursorPosition = promptLength + commandBuilder.Length - therest1.Length;
-                                Console.Write(therest1 + " ");
-                                Console.Write("\b \b");  // Erase last character on the screen
+                                _view.Display(therest1 + " ");
+                                _view.Display("\b \b");  // Erase last character on the screen
                                 Console.CursorLeft = cursorPosition;
                             }
                             break;
@@ -169,7 +174,7 @@ namespace bash.dotnet {
                                 cursorPosition = promptLength + commandBuilder.Length;                                
                             }
 
-                            Console.Write(keyInfo.KeyChar + therest);
+                            _view.Display(keyInfo.KeyChar + therest);
 
                             for (int x = 0; x < therest.Length; x++) {
                                 MoveCursorLeft();
@@ -180,7 +185,7 @@ namespace bash.dotnet {
                     }
 
                     if (keyInfo.Key == ConsoleKey.Enter) {                        
-                        Console.Write(Environment.NewLine);
+                        _view.Display(Environment.NewLine);
                         break;
                     }
                 }
@@ -297,6 +302,8 @@ namespace bash.dotnet {
             if (!File.Exists(configOptions.getLaunchDir() + "\\keyboard.cfg")) {
                 return configOptions;
             }
+            configOptions.setForegroundColor("white");
+            configOptions.setBackgroundColor("black");
             var lines = File.ReadAllLines(configOptions.getLaunchDir() + "\\keyboard.cfg");
             for (var i = 0; i < lines.Length; i += 1) {
                 var line = lines[i];
@@ -319,6 +326,12 @@ namespace bash.dotnet {
                     }
                 } else if (tokens[0] == "title") {
                     configOptions.setTitle(tokens[1]);
+                } else if (tokens[0] == "bgc") {
+                    string color = tokens[1].Trim().ToLower();
+                    configOptions.setBackgroundColor(color);                    
+                } else if (tokens[0] == "fgc") {
+                    string color = tokens[1].Trim().ToLower();
+                    configOptions.setForegroundColor(color);
                 }
             }
 
@@ -339,7 +352,7 @@ namespace bash.dotnet {
             if (commandBuilder.Length > 0)
             {
                 commandBuilder.Remove(commandBuilder.Length - 1, 1);
-                Console.Write("\b \b");  // Erase last character on the screen
+                _view.Display("\b \b");  // Erase last character on the screen
             }
 
             return commandBuilder;
@@ -353,7 +366,7 @@ namespace bash.dotnet {
             return commandBuilder;
         }
 
-        private ConfigOptions ExecuteCommand(string cmdText, CommandFactory factory, ConfigOptions configOptions) {
+        private ConfigOptions ExecuteCommand(string cmdText, ICommandFactory factory, ConfigOptions configOptions) {
             string[] tokens_temp = cmdText.Split(" ", StringSplitOptions.RemoveEmptyEntries);
 
             List<string> tokensList = new();

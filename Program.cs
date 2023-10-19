@@ -15,7 +15,7 @@ class Program
 
         IView nullView = new NullView();
         
-        IInput input = new KeyboardInput();
+        IInput input = new KeyboardInput(outputView);
         if (args.Length > 0) 
             input = new FileInput(args[0]);
 

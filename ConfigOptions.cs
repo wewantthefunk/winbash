@@ -9,6 +9,8 @@ namespace bash.dotnet
         private string _prompt;
         private string _environmentPath;
         private string _title;
+        private string _backgroundColor;
+        private string _foregroundColor;
 
         public const string DEFAULT_PROMPT = "[dir] $ ";
 
@@ -20,6 +22,8 @@ namespace bash.dotnet
             _promptTemplate = DEFAULT_PROMPT;
             _username = Environment.UserName;
             _title = "WinBash Command Line";
+            _backgroundColor = "black";
+            _foregroundColor = "white";
             resetPrompt();
             resetEnvironmentPath();
         }
@@ -62,6 +66,22 @@ namespace bash.dotnet
 
         public string[] getPath() {
             return _environmentPath.Split(";", StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string getBackgroundColor() {
+            return _backgroundColor;
+        }
+
+        public void setBackgroundColor(string value) {
+            _backgroundColor = value;
+        }
+
+        public string getForegroundColor() {
+            return _foregroundColor;
+        }
+
+        public void setForegroundColor(string value) {
+            _foregroundColor = value;
         }
 
         public void resetPrompt() {

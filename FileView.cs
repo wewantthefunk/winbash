@@ -30,16 +30,16 @@ namespace bash.dotnet
         }
 
         public void Clear() {
-            if (File.Exists(_filename))
-            {
+            if (File.Exists(_filename)) {
                 // If it exists, delete it
                 File.Delete(_filename);
             }
 
             // Create a new file
-            using (FileStream fs = File.Create(_filename))
-            {                
+            using (FileStream fs = File.Create(_filename)) {                
             }
         }
+
+        public void SetConfigOptions(ConfigOptions? configOptions) { }
     }
 }

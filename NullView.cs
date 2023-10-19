@@ -22,5 +22,7 @@ namespace bash.dotnet
         }
 
         public void Clear(){}
+
+        public void SetConfigOptions(ConfigOptions? options) { }
     }
 }

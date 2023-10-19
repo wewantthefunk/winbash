@@ -31,8 +31,7 @@ namespace bash.dotnet
             _configOptions = _inputDevice.ReadConfig(_configOptions);
             _configOptions.resetPrompt();
             _configOptions.resetEnvironmentPath();
-            command = _factory.Create("clear", _configOptions);
-            _configOptions = command.Go(Array.Empty<string>());
+            _view.SetConfigOptions(_configOptions);
             return _configOptions;
         }
 

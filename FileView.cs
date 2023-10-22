@@ -9,7 +9,7 @@ namespace bash.dotnet
             Clear();
         }
         public void Display(string msg) {
-            File.AppendAllLines(_filename, new string[] { msg });
+            File.AppendAllText(_filename, msg);
         }
 
         public void Display(string msg, EntryType type)

@@ -12,35 +12,39 @@ namespace bash.dotnet {
             _inputDevice = inputDevice;
         }
         public ICommand Create(string input, ConfigOptions configOptions) {
+            return Create(input, configOptions, _view);
+        }
+
+        public ICommand Create(string input, ConfigOptions configOptions, IView view) {
             input = input.ToLower().Trim();
             if (input == "ls") {
-                return new LSBash(configOptions, _view);
+                return new LSBash(configOptions, view);
             } else if (input == "pwd") {
-                return new PWDBash(configOptions, _view);
+                return new PWDBash(configOptions, view);
             } else if (input == "cd") {
-                return new CDBash(configOptions, _view, _inputDevice);
+                return new CDBash(configOptions, view, _inputDevice);
             } else if (input == "cat") {
-                return new CATBash(configOptions, _view);
+                return new CATBash(configOptions, view);
             } else if (input.StartsWith("./")) {
-                return new EXECBash(configOptions, _view, input[2..]);
+                return new EXECBash(configOptions, view, input[2..]);
             } else if (input == "clear") {
-                return new CLEARBash(configOptions, _view);
+                return new CLEARBash(configOptions, view);
             } else if (input == "echo") {
-                return new ECHOBash(_view, configOptions);
+                return new ECHOBash(view, configOptions);
             } else if (input == "config") {
-                return new CONFIGBash(configOptions, _view, this, _inputDevice);
+                return new CONFIGBash(configOptions, view, this, _inputDevice);
             } else if (input == "mv") {
-                return new MVBash(_view, configOptions);
+                return new MVBash(view, configOptions);
             } else if (input == "cp") {
-                return new CPBash(_view, configOptions);
+                return new CPBash(view, configOptions);
             } else if (input == "rm") {
-                return new RMBash(_view, configOptions);
+                return new RMBash(view, configOptions);
             } else if (input == "mkdir") {
-                return new MKDIRBash(configOptions, _view);
+                return new MKDIRBash(configOptions, view);
             } else if (input == "rmdir") {
-                return new RMDIRBash(configOptions, _view);
+                return new RMDIRBash(configOptions, view);
             } else if (input == "compgen") {
-                return new COMPGENBash(_view, configOptions, _inputDevice, this);
+                return new COMPGENBash(view, configOptions, _inputDevice, this);
             }
 
             if (input == "./") {
@@ -52,11 +56,11 @@ namespace bash.dotnet {
                 co.setStartingDir(p);
                 string exe = FindCommandInPath(input, co);
                 if (!string.IsNullOrEmpty(exe)) {
-                    return new EXECBash(configOptions, _view, exe);
+                    return new EXECBash(configOptions, view, exe);
                 }
             }
 
-            return new UnknownCommand(_view, configOptions);
+            return new UnknownCommand(view, configOptions);
         }
 
         public string[] getBuiltInCommands() {

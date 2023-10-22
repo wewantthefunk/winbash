@@ -404,11 +404,21 @@ namespace bash.dotnet {
 
             foreach(Alias a in _aliases) {
                 if (a.getName() == tokens[0]) {
-                    return ExecuteCommand(a.getCommand(), factory, configOptions);
+                    List<string> list = new List<string>();
+                    list.Add(a.getCommand());
+                    list.AddRange(tokens.Skip(1));
+                    return ExecuteCommand(string.Join(' ', list.ToArray()), factory, configOptions);
                 }
             }
 
-            ICommand command = factory.Create(tokens[0], configOptions);
+            IView view = _view;
+
+            if (tokens.Contains(">")) {
+                int index = find(tokens, ">");
+                view = new FileView(tokens[index]);
+            }
+
+            ICommand command = factory.Create(tokens[0], configOptions, view);
 
             configOptions = command.Go(args);
 
@@ -420,6 +430,23 @@ namespace bash.dotnet {
 
             for (int x = 0; x < result.Length; x++) {
                 result[x] = _aliases[x].getName();
+            }
+
+            return result;
+        }
+
+        private int find(string[] s, string search) {
+            int result = -1;
+
+            int count = 0;
+
+            foreach(string s2 in s) {
+                if (s2 == search) {
+                    result = count + 1;
+                    break;
+                }
+
+                count++;
             }
 
             return result;

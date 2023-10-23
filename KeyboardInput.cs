@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System;
+using System.Diagnostics;
 
 namespace bash.dotnet {
     partial class KeyboardInput : IInput {
@@ -60,7 +61,7 @@ namespace bash.dotnet {
                             var suggestions = GetAutocompleteSuggestions(one[^1]);
                             if (suggestions.Count > 0) {
                                 for (int y = 0; y < one[^1].Length; y++) {
-                                    commandBuilder = Backspace(commandBuilder);
+                                    commandBuilder = Backspace(commandBuilder, commandBuilder.Length - 1);
                                 }
                                 var itemName = suggestions[0].Replace("C:", "");
                                 itemName = itemName.Replace("\\", "/");
@@ -79,13 +80,23 @@ namespace bash.dotnet {
                             break;
                         case ConsoleKey.Backspace:
                             cursorPosition--;
-                            commandBuilder = Backspace(commandBuilder);
-                            int rest = commandBuilder.Length - cursorPosition;
+                            if (cursorPosition < promptLength) {
+                                cursorPosition= promptLength;
+                                continue;
+                            }
+                            commandBuilder = Backspace(commandBuilder,cursorPosition - promptLength);
+                            int rest = commandBuilder.Length - (cursorPosition - promptLength);
                             for (int x = 0; x < rest + 1; x++) {
                                 _view.Display(" ");
                             }
+                            for (int x = 0; x < rest + 1; x++) {
+                                MoveCursorLeft();
+                            }
                             for (int x = 0; x < rest; x++) {
-                                _view.Display(commandBuilder.ToString()[cursorPosition + x].ToString());
+                                _view.Display(commandBuilder.ToString()[(cursorPosition - promptLength) + x].ToString());
+                            }
+                            for (int x = 0; x < rest; x++) {
+                                MoveCursorLeft();
                             }
                             break;
                         case ConsoleKey.UpArrow:
@@ -348,10 +359,10 @@ namespace bash.dotnet {
             return -1;
         }
 
-        private StringBuilder Backspace(StringBuilder commandBuilder) {
+        private StringBuilder Backspace(StringBuilder commandBuilder, int characterPos) {
             if (commandBuilder.Length > 0)
             {
-                commandBuilder.Remove(commandBuilder.Length - 1, 1);
+                commandBuilder.Remove(characterPos, 1);
                 _view.Display("\b \b");  // Erase last character on the screen
             }
 
@@ -360,7 +371,7 @@ namespace bash.dotnet {
 
         private StringBuilder ClearCommand(StringBuilder commandBuilder) {
             while (commandBuilder.Length > 0) {
-                commandBuilder = Backspace(commandBuilder);
+                commandBuilder = Backspace(commandBuilder, commandBuilder.Length -  1);
             }
 
             return commandBuilder;

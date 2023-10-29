@@ -88,6 +88,12 @@ namespace bash.dotnet {
                             showHidden = true;
                         }
                     }
+                } else if (arg.Contains("/")) {
+                    string d = arg.Replace("/", "\\");
+                    if (!d.EndsWith("\\")) {
+                        d += "\\";
+                    }
+                    _directory = d;
                 }
             }
             int max_columns = 6;
@@ -101,14 +107,14 @@ namespace bash.dotnet {
             foreach (string file in files) {
                 string name = file.Replace(_directory, string.Empty);
                 if ((name.StartsWith(".") && showHidden) || !name.StartsWith(".")) {
-                    _entries.Add(name, new LSEntry(name, 0, EntryType.FILE));
+                    _entries.Add(name, new LSEntry(name, 0, EntryType.FILE, _directory));
                 }
             }
             string[] dirs = Directory.GetDirectories(_directory);
             foreach (string dir in dirs) {
                 string name = dir.Replace(_directory, string.Empty);
                 if ((name.StartsWith(".") && showHidden) || !name.StartsWith(".")) {
-                    _entries.Add(name, new LSEntry(name, 0, EntryType.DIR));
+                    _entries.Add(name, new LSEntry(name, 0, EntryType.DIR, _directory));
                 }
             }
 
@@ -179,7 +185,10 @@ namespace bash.dotnet {
 
         private string _fileDate;
 
-        public LSEntry(string name, int col, EntryType type) {
+        private string _directory;
+
+        public LSEntry(string name, int col, EntryType type, string directory) {
+            _directory = directory;
             _name = name;
             _col = col;
             if (name.ToLower().Trim().EndsWith(".exe") ||
@@ -194,7 +203,7 @@ namespace bash.dotnet {
                 _type = type;
             }
 
-            FileInfo fi = new(name);
+            FileInfo fi = new(directory + name);
 
             if (!getEntryType().Equals(EntryType.DIR)) {
                 try {

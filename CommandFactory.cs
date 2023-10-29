@@ -86,11 +86,12 @@ namespace bash.dotnet {
                       n.Equals(strippedCmd + ".ps1") ||
                       n.Equals(strippedCmd + ".cmd") ) {
                     result = n;
+                    _view.DisplayInfo("Found " + configOptions.getStartingDir().Replace("\\", "/") + "/" + result);
                     break;
                 }
             }
 
-            cd.Go(new string[] { currentDirectory});
+            cd.Go(new string[] { currentDirectory });
             return result;
         }
     }

@@ -58,13 +58,14 @@ namespace bash.dotnet {
                     switch (keyInfo.Key) {
                         case ConsoleKey.Tab:
                             string[] one = commandBuilder.ToString().Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                            var suggestions = GetAutocompleteSuggestions(one[^1]);
+                            var suggestions = GetAutocompleteSuggestions(one[^1], configOptions);
                             if (suggestions.Count > 0) {
                                 for (int y = 0; y < one[^1].Length; y++) {
                                     commandBuilder = Backspace(commandBuilder, commandBuilder.Length - 1);
                                 }
                                 var itemName = suggestions[0].Replace("C:", "");
                                 itemName = itemName.Replace("\\", "/");
+                                itemName = itemName.Replace(configOptions.getStartingDir() + "/", "");
                                 if (itemName.Contains(" ")) {
                                     itemName = "\"" + itemName + "\"";
                                 }
@@ -213,7 +214,7 @@ namespace bash.dotnet {
             }
         }
 
-        private List<string> GetAutocompleteSuggestions(string input) {
+        private List<string> GetAutocompleteSuggestions(string input, ConfigOptions configOptions) {
             // Split the input into a path and the current incomplete directory/file name
             string basePath, currentIncompleteName;
             int lastSlashIndex = input.LastIndexOf('/');

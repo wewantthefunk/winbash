@@ -23,6 +23,7 @@ namespace bash.dotnet {
             }
 
             path = path.Replace("/", "\\");
+            path = path.Replace("\"", "");
 
             try {
                 Directory.SetCurrentDirectory(path);

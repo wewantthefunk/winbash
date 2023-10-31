@@ -316,6 +316,7 @@ namespace bash.dotnet {
             }
             configOptions.setForegroundColor("white");
             configOptions.setBackgroundColor("black");
+            configOptions.setShowCmd(false);
             var lines = File.ReadAllLines(configOptions.getLaunchDir() + "\\keyboard.cfg");
             for (var i = 0; i < lines.Length; i += 1) {
                 var line = lines[i];
@@ -340,10 +341,12 @@ namespace bash.dotnet {
                     configOptions.setTitle(tokens[1]);
                 } else if (tokens[0] == "bgc") {
                     string color = tokens[1].Trim().ToLower();
-                    configOptions.setBackgroundColor(color);                    
+                    configOptions.setBackgroundColor(color);
                 } else if (tokens[0] == "fgc") {
                     string color = tokens[1].Trim().ToLower();
                     configOptions.setForegroundColor(color);
+                } else if (tokens[0] == "showCmd") {
+                    configOptions.setShowCmd(bool.Parse(tokens[1]));
                 }
             }
 
@@ -428,6 +431,11 @@ namespace bash.dotnet {
             if (tokens.Contains(">")) {
                 int index = find(tokens, ">");
                 view = new FileView(tokens[index]);
+                args = new string[index - 2];
+
+                for (int x = 1; x < index - 1; x++) {
+                    args[x - 1] = tokens[x];
+                }
             }
 
             ICommand command = factory.Create(tokens[0], configOptions, view);

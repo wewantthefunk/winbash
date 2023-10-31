@@ -29,6 +29,8 @@ namespace bash.dotnet
             Display(msg);
         }
 
+        public void DisplayCloseOut() { }
+
         public void Clear() {
             if (File.Exists(_filename)) {
                 // If it exists, delete it
@@ -41,5 +43,9 @@ namespace bash.dotnet
         }
 
         public void SetConfigOptions(ConfigOptions? configOptions) { }
+
+        public ViewType getViewType() {
+            return ViewType.File;
+        }
     }
 }

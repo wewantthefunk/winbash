@@ -21,8 +21,14 @@ namespace bash.dotnet
             Display(msg);
         }
 
+        public void DisplayCloseOut() { }
+
         public void Clear(){}
 
         public void SetConfigOptions(ConfigOptions? options) { }
+
+        public ViewType getViewType() {
+            return ViewType.Null;
+        }
     }
 }

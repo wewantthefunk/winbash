@@ -11,6 +11,7 @@ namespace bash.dotnet
         private string _title;
         private string _backgroundColor;
         private string _foregroundColor;
+        private bool _showCmd;
 
         public const string DEFAULT_PROMPT = "[dir] $ ";
 
@@ -26,6 +27,7 @@ namespace bash.dotnet
             _foregroundColor = "white";
             resetPrompt();
             resetEnvironmentPath();
+            _showCmd = false;
         }
 
         public string getLaunchDir() {
@@ -82,6 +84,14 @@ namespace bash.dotnet
 
         public void setForegroundColor(string value) {
             _foregroundColor = value;
+        }
+
+        public void setShowCmd(bool value) { 
+            _showCmd= value;
+        }
+
+        public bool getShowCmd() {
+            return _showCmd;
         }
 
         public void resetPrompt() {

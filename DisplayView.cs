@@ -26,24 +26,29 @@ namespace bash.dotnet
             int startIndex = 0;
             int index = 0;
             int end = 0;
+            int lastKnownStart = 0;
 
             if (msg.IndexOf(COLOR_CHANGE_START, startIndex) >= 0) {
                 list.Add(new(msg.Substring(index, msg.IndexOf(COLOR_CHANGE_START, startIndex)), "default"));
                 while ((startIndex = msg.IndexOf(COLOR_CHANGE_START, startIndex)) != -1) {
-                    int start = msg.IndexOf(COLOR_CHANGE_START);
+                    if (startIndex > lastKnownStart) {
+                        list.Add(new(msg.Substring(lastKnownStart, startIndex - lastKnownStart), _foregroundColor.ToString().ToLower()));
+                    }
+                    int start = msg.IndexOf(COLOR_CHANGE_START, startIndex);
                     int start_1 = msg.IndexOf("]", start);
                     string color = msg.Substring(start + COLOR_CHANGE_START.Length, start_1 - COLOR_CHANGE_START.Length - start);
-                    end = msg.IndexOf(COLOR_CHANGE_END);
+                    end = msg.IndexOf(COLOR_CHANGE_END, start + COLOR_CHANGE_START.Length + color.Length + 1);
                     list.Add(new(msg.Substring(start_1 + 1, end - start_1 - 1), color));
                     end = end + COLOR_CHANGE_END.Length;
                     startIndex = end;
+                    lastKnownStart = startIndex;
                 }
 
                 list.Add(new(msg.Substring(end), "default"));
 
                 foreach (TextInfo m in list) {
                     string color = m.Color;
-                    ConsoleColor c = ConsoleColor.White;
+                    ConsoleColor c = _foregroundColor;
                     if (color == "blue")
                         c = ConsoleColor.Blue;
                     else if (color == "red")
@@ -63,7 +68,7 @@ namespace bash.dotnet
 
                     Console.Write(m.Text);
 
-                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.ForegroundColor = _foregroundColor;
                 }
             } else 
                 Console.Write(msg);
@@ -84,42 +89,42 @@ namespace bash.dotnet
             if (_configOptions == null)
                 return;
 
-            string color = _configOptions.getForegroundColor();
+            string fcolor = _configOptions.getForegroundColor();
 
             _foregroundColor = ConsoleColor.White;
 
-            if (color == "blue")
+            if (fcolor == "blue")
                 _foregroundColor = ConsoleColor.Blue;
-            else if (color == "red")
+            else if (fcolor == "red")
                 _foregroundColor = ConsoleColor.Red;
-            else if (color == "green")
+            else if (fcolor == "green")
                 _foregroundColor = ConsoleColor.Green;
-            else if (color == "gray")
+            else if (fcolor == "gray")
                 _foregroundColor = ConsoleColor.Gray;
-            else if (color == "yellow")
+            else if (fcolor == "yellow")
                 _foregroundColor = ConsoleColor.Yellow;
-            else if (color == "white")
+            else if (fcolor == "white")
                 _foregroundColor = ConsoleColor.White;
-            else if (color == "black")
+            else if (fcolor == "black")
                 _foregroundColor = ConsoleColor.Black;
 
-            color = _configOptions.getBackgroundColor();
+            string bcolor = _configOptions.getBackgroundColor();
 
             _backgroundColor = ConsoleColor.Black;
 
-            if (color == "blue")
+            if (bcolor == "blue")
                 _backgroundColor = ConsoleColor.Blue;
-            else if (color == "red")
+            else if (bcolor == "red")
                 _backgroundColor = ConsoleColor.Red;
-            else if (color == "green")
+            else if (bcolor == "green")
                 _backgroundColor = ConsoleColor.Green;
-            else if (color == "gray")
+            else if (bcolor == "gray")
                 _backgroundColor = ConsoleColor.Gray;
-            else if (color == "yellow")
+            else if (bcolor == "yellow")
                 _backgroundColor = ConsoleColor.Yellow;
-            else if (color == "white")
+            else if (bcolor == "white")
                 _backgroundColor = ConsoleColor.White;
-            else if (color == "black")
+            else if (bcolor == "black")
                 _backgroundColor = ConsoleColor.Black;
 
             Console.ForegroundColor = _foregroundColor;
@@ -143,6 +148,10 @@ namespace bash.dotnet
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Display(msg);
             Console.ForegroundColor = _foregroundColor;
+        }
+
+        public void DisplayCloseOut() {
+            Display(Environment.NewLine);
         }
 
         public void DisplayDir(string msg) {
@@ -171,6 +180,10 @@ namespace bash.dotnet
             int topRightRow = 0;
             int topRightColumn = 0;
             Console.SetCursorPosition(topRightColumn, topRightRow);
+        }
+
+        public ViewType getViewType() {
+            return ViewType.Console;
         }
     }
 

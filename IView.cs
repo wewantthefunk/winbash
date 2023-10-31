@@ -12,8 +12,18 @@ namespace bash.dotnet
 
         void DisplayInfo(string msg);
 
+        void DisplayCloseOut();
+
         void Clear();
 
         void SetConfigOptions(ConfigOptions? configOptions);
+
+        ViewType getViewType();
+    }
+
+    public enum ViewType {
+        File,
+        Console,
+        Null
     }
 }

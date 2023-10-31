@@ -9,11 +9,21 @@ namespace bash.dotnet
             _configOptions = configOptions;
         }
         public ConfigOptions Go(string[] args) {
+            int count = 0;
             foreach(string arg in args) {
-                string e = arg.Replace("\\n", Environment.NewLine) + " ";
+                if (string.IsNullOrEmpty(arg)) {
+                    continue;
+                }
+                string suffix = " ";
+                count++;
+                if (count >= args.Length) {
+                    suffix = "";
+                }
+                string e = arg.Replace("\\n", Environment.NewLine) + suffix;
                 _view.DisplayInfo(e);
             }
-            _view.DisplayInfo(Environment.NewLine);
+
+            _view.DisplayCloseOut();
 
             return _configOptions;
         }

@@ -54,6 +54,7 @@ namespace bash.dotnet {
             foreach (string p in configOptions.getPath()) {
                 ConfigOptions co = new(p);
                 co.setStartingDir(p);
+                co.setShowCmd(configOptions.getShowCmd());
                 string exe = FindCommandInPath(input, co);
                 if (!string.IsNullOrEmpty(exe)) {
                     return new EXECBash(configOptions, view, exe);
@@ -86,7 +87,8 @@ namespace bash.dotnet {
                       n.Equals(strippedCmd + ".ps1") ||
                       n.Equals(strippedCmd + ".cmd") ) {
                     result = n;
-                    _view.DisplayInfo("Found " + configOptions.getStartingDir().Replace("\\", "/") + "/" + result + "\n");
+                    if (configOptions.getShowCmd())
+                        _view.DisplayInfo("Found " + configOptions.getStartingDir().Replace("\\", "/") + "/" + result + "\n");
                     break;
                 }
             }

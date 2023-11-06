@@ -27,20 +27,34 @@ namespace bash.dotnet
                 Arguments = $"/c {_command} {string.Join(" ", args)}"
             };
 
-            var process = new Process { StartInfo = processStartInfo };
-            process.Start();
+            // Create and start the process
+            using (Process process = new Process()) {
+                process.StartInfo = processStartInfo;
 
-            string output = process.StandardOutput.ReadToEnd();
-            string error = process.StandardError.ReadToEnd();
+                // Define event handlers for real-time output
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (!String.IsNullOrEmpty(e.Data)) {
+                        _view.Display(e.Data + Environment.NewLine);
+                    }
+                };
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (!String.IsNullOrEmpty(e.Data)) {
+                        _view.DisplayError(e.Data + Environment.NewLine);
+                    }
+                };
 
-            _view.Display(output);
+                // Start the process
+                process.Start();
 
-            if (!string.IsNullOrEmpty(error))
-            {
-                _view.DisplayError(error);
+                // Start reading from the redirected streams
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                // Wait for the process to exit
+                process.WaitForExit();
             }
-
-            process.WaitForExit();
 
             return _configOptions;
         }

@@ -389,7 +389,7 @@ namespace bash.dotnet {
             string temp = "";
             bool inQuotes = false;
             foreach(string token in tokens_temp) {
-                if (token.StartsWith("\"")) {
+                if (token.StartsWith("\"") && token != "\"") {
                     inQuotes = true;
                     temp = token[0..];    
                     if (token.EndsWith("\"")) {

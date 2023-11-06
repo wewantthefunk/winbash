@@ -17,6 +17,7 @@ namespace bash.dotnet
             _configOptions = configOptions;
         }
         public ConfigOptions Go(string[] args) {
+            string currentDirectory = Environment.CurrentDirectory;
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = "cmd.exe",
@@ -24,7 +25,7 @@ namespace bash.dotnet
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                Arguments = $"/c {_command} {string.Join(" ", args)}"
+                Arguments = $"/c {"\"" + _configOptions.getLaunchDir() + "\\" + _command + "\""} {string.Join(" ", args)}"
             };
 
             // Create and start the process
@@ -55,6 +56,8 @@ namespace bash.dotnet
                 // Wait for the process to exit
                 process.WaitForExit();
             }
+
+            Environment.CurrentDirectory = currentDirectory;
 
             return _configOptions;
         }

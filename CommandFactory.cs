@@ -54,10 +54,11 @@ namespace bash.dotnet {
             foreach (string p in configOptions.getPath()) {
                 ConfigOptions co = new(p);
                 co.setStartingDir(p);
+                co.setPromptTmeplate(configOptions.getPromptTemplate());
                 co.setShowCmd(configOptions.getShowCmd());
-                string exe = FindCommandInPath(input, co);
-                if (!string.IsNullOrEmpty(exe)) {
-                    return new EXECBash(configOptions, view, exe);
+                co = FindCommandInPath(input, co);
+                if (!string.IsNullOrEmpty(co.getTemp())) {
+                    return new EXECBash(co, view, co.getTemp());
                 }
             }
 
@@ -68,7 +69,7 @@ namespace bash.dotnet {
             return new string[] { "cat", "cd", "clear", "compgen", "config", "cp", "echo", "mkdir", "mv", "pwd", "rm", "rmdir" };
         }
 
-        private string FindCommandInPath(string command, ConfigOptions configOptions) {
+        private ConfigOptions FindCommandInPath(string command, ConfigOptions configOptions) {
             string result = string.Empty;
 
             CDBash cd = new(configOptions, _nullView, _inputDevice);
@@ -94,7 +95,8 @@ namespace bash.dotnet {
             }
 
             cd.Go(new string[] { currentDirectory });
-            return result;
+            configOptions.setTemp(result);
+            return configOptions;
         }
     }
 }

@@ -12,6 +12,7 @@ namespace bash.dotnet
         private string _backgroundColor;
         private string _foregroundColor;
         private bool _showCmd;
+        private string _temp;
 
         public const string DEFAULT_PROMPT = "[dir] $ ";
 
@@ -28,6 +29,7 @@ namespace bash.dotnet
             resetPrompt();
             resetEnvironmentPath();
             _showCmd = false;
+            _temp = string.Empty;
         }
 
         public string getLaunchDir() {
@@ -94,6 +96,14 @@ namespace bash.dotnet
             return _showCmd;
         }
 
+        public string getTemp() {
+            return _temp;
+        }
+
+        public void setTemp(string value) {
+            _temp = value;
+        }
+
         public void resetPrompt() {
             string prompt = getPromptTemplate();
 
@@ -111,7 +121,9 @@ namespace bash.dotnet
         }
 
         public void resetEnvironmentPath() {
-            string? p = Environment.GetEnvironmentVariable("PATH");
+            string? p = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
+            if (p != null) { p = string.Empty; }
+            p += Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine);
             if (string.IsNullOrEmpty(p)) {
                 _environmentPath = string.Empty;
             } else {

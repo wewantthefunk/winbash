@@ -18,8 +18,8 @@ namespace bash.dotnet
         }
         public ConfigOptions Go(string[] args) {
             string currentDirectory = Environment.CurrentDirectory;
-            string cmdWithArgs = "/c \"" + _configOptions.getLaunchDir() + "\\" + _command + "\" " + string.Join(" ", args);
-            Console.WriteLine(cmdWithArgs);
+            string cmdWithArgs = "/c \"" + _configOptions.getLaunchDir() + "\\" + _command + "\" " + string.Join(" ", args).Replace("\"", "'");
+            
             var processStartInfo = new ProcessStartInfo {
                 FileName = "cmd.exe",
                 RedirectStandardOutput = true,

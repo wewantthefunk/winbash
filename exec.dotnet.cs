@@ -21,7 +21,7 @@ namespace bash.dotnet
             string cmdWithArgs = "/c " + _command + " " + string.Join(" ", args);
 
             var pathVariable = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
-            pathVariable += Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine);
+            pathVariable += ";" + Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine);
             Environment.SetEnvironmentVariable("PATH", pathVariable);
 
             // Now start your process

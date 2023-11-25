@@ -19,6 +19,9 @@ namespace bash.dotnet {
             string path = string.Empty;
 
             for (int x = 0; x < args.Length; x++) {
+                if (args[x] == "~home") {
+                    args[x] = _configOptions.getStartingDir();
+                }
                 path += args[x];
             }
 

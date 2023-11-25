@@ -14,7 +14,9 @@ namespace bash.dotnet {
         private IView _view;
 
         public KeyboardInput(IView view) {
-            _aliases = new();
+            _aliases = new() {
+                new Alias("~home", "cd ~home")
+            };
             _isInsertMode = true;
             _view = view;
         }

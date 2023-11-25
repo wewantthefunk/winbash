@@ -26,7 +26,7 @@ namespace bash.dotnet
         public ConfigOptions Go(string[] args)
         {
             ICommand command = _factory.Create("notepad", _configOptions);
-            command.Go(new string[] { _configOptions.getLaunchDir() + "\\keyboard.cfg" });
+            command.Go(new string[] { _configOptions.getLaunchDir().Replace("/", "\\") + "\\keyboard.cfg" });
             _configOptions.setPromptTmeplate(ConfigOptions.DEFAULT_PROMPT);
             _configOptions = _inputDevice.ReadConfig(_configOptions);
             _configOptions.resetPrompt();

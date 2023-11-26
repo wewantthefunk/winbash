@@ -122,8 +122,8 @@ namespace bash.dotnet
 
         public void resetEnvironmentPath() {
             string? p = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
-            if (p != null) { p = string.Empty; }
-            p += Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine);
+            if (p == null) { p = string.Empty; }
+            p += ";" + Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine);
             if (string.IsNullOrEmpty(p)) {
                 _environmentPath = string.Empty;
             } else {

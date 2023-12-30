@@ -174,12 +174,16 @@ namespace bash.dotnet
 
         public void Clear() {
             // Clear the console window
-            Console.Clear();
+            try {
+                Console.Clear();            
 
-            // Set the cursor position to the top right corner
-            int topRightRow = 0;
-            int topRightColumn = 0;
-            Console.SetCursorPosition(topRightColumn, topRightRow);
+                // Set the cursor position to the top right corner
+                int topRightRow = 0;
+                int topRightColumn = 0;
+                Console.SetCursorPosition(topRightColumn, topRightRow);
+            } catch {
+
+            }
         }
 
         public ViewType getViewType() {

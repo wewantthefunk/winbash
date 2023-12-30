@@ -45,6 +45,8 @@ namespace bash.dotnet {
                 return new RMDIRBash(configOptions, view);
             } else if (input == "compgen") {
                 return new COMPGENBash(view, configOptions, _inputDevice, this);
+            } else if (input == "start") {
+                return new EXECBash(configOptions, view, input);
             }
 
             if (input == "./") {

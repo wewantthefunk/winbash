@@ -75,8 +75,7 @@ namespace bash.dotnet
         }
 
         private void startProcessShell(string[] args) {
-            STARTUPINFO si = new STARTUPINFO();
-            PROCESS_INFORMATION pi = new PROCESS_INFORMATION();
+            STARTUPINFO si = new();
 
             // Create the process
             bool success = CreateProcess(
@@ -89,14 +88,14 @@ namespace bash.dotnet
                 IntPtr.Zero, // Use parent's environment block
                 null, // Use parent's starting directory 
                 ref si, // Pointer to STARTUPINFO structure
-                out pi // Pointer to PROCESS_INFORMATION structure
+                out PROCESS_INFORMATION pi // Pointer to PROCESS_INFORMATION structure
             );
 
             // Check to see if CreateProcess succeeded
             if (success) {
                 // Here, you might want to do something with the process, such as waiting for it to complete
-                
-                WaitForSingleObject(pi.hProcess, uint.MaxValue);
+
+                _ = WaitForSingleObject(pi.hProcess, uint.MaxValue);
                 // Close process and thread handles. 
                 CloseHandle(pi.hProcess);
                 CloseHandle(pi.hThread);
